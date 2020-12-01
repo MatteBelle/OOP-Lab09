@@ -35,7 +35,6 @@ import javax.swing.JTextArea;
 public final class LambdaFilter extends JFrame {
 
     private static final long serialVersionUID = 1760990730218643730L;
-    private static final String ANY_NON_WORD = "(\\s|\\p{Punct})+";
 
     private enum Command {
         IDENTITY("No modifications", Function.identity()),
@@ -43,16 +42,20 @@ public final class LambdaFilter extends JFrame {
         COUNT_CHARS("Count number of chars", s -> Integer.toString(s.length())),
         COUNT_LINES("Count number of lines", s -> Long.toString(s.lines().count())),
         ORDER_WORDS("Sort words in alphabetical order", s ->
-        Arrays.stream(s.split(ANY_NON_WORD))
+        Arrays.stream(s.split(" "))
             .sorted()
-            .collect(Collectors.joining("\n"))),
-        WORDS_OCCURENCIES("Count and write occurences for each word", s ->
-        Arrays.stream(s.split(ANY_NON_WORD))
+            .reduce((x, y) -> x + " " + y)
+            .get()
+            .toString()),
+        WORDS_OCCURENCIES("Count and write occurences for each word", w ->
+        Arrays.stream(w.split(" "))
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-            .entrySet().stream()
+            .entrySet()
+            .stream()
             .map(e -> e.getKey() + " -> " + e.getValue())
-            .collect(Collectors.joining("\n"))
-    );
+            .reduce((x, y) -> x + " " + y)
+            .get()
+            .toString());
 
         private final String commandName;
         private final Function<String, String> fun;
